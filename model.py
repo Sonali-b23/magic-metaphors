@@ -1,43 +1,31 @@
 import os
-import requests
+import time
 from dotenv import load_dotenv
 from huggingface_hub import InferenceClient
 
 load_dotenv()
-HF_API_KEY = os.getenv("HF_API_KEY")
-
-client = InferenceClient(api_key=HF_API_KEY)
-
-def clean_response(text):
-    stop_phrases = [
-        "Would you like", "Do you want", "Need another", "😊", "😉", "🙂"
-    ]
-    for phrase in stop_phrases:
-        if phrase in text:
-            return text.split(phrase)[0].strip()
-    return text.strip()
+client = InferenceClient(api_key=os.getenv("HF_API_KEY"))
 
 def generate_metaphor(topic):
-    prompt = (
-        f"Explain the topic '{topic}' using a simple and creative metaphor for a high school student. "
-        f"Give only one metaphor. Do not include emojis, follow-up questions, or suggestions."
-    )
-    try:
-        completion = client.chat.completions.create(
-            model="deepseek-ai/DeepSeek-V3-0324",
-            messages=[{"role": "user", "content": prompt}],
-        )
-        raw_response = completion.choices[0].message["content"]
-        return clean_response(raw_response)
-    except Exception as e:
-        return f"❌ Error generating explanation: {str(e)}"
+    prompt = f"Explain '{topic}' using a simple metaphor for a high school student. No emojis or follow-up questions."
+    
+    # Retry logic
+    for i in range(3):
+        try:
+            res = client.chat.completions.create(
+                model="deepseek-ai/DeepSeek-V3-0324",
+                messages=[{"role": "user", "content": prompt}]
+            )
+            return res.choices[0].message["content"].strip()
+        except Exception:
+            time.sleep(1)
+    return "Could not generate metaphor at this time."
 
 def generate_image(prompt):
     try:
-        image = client.text_to_image(
-            prompt=prompt,
-            model="black-forest-labs/FLUX.1-dev"
-        )
+        # Use a descriptive prompt for the image
+        img_prompt = f"A beautiful artistic illustration of: {prompt}"
+        image = client.text_to_image(prompt=img_prompt, model="stabilityai/stable-diffusion-xl-base-1.0")
         return image, None
     except Exception as e:
-        return None, f"❌ Image generation failed: {e}"
+        return None, str(e)
