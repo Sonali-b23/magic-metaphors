@@ -8,9 +8,9 @@ A clean, robust Streamlit application that transforms complex topics into clear 
 
 ## Example
 
-Type in a topic like "Machine Learning" and get back a plain-language metaphor plus a matching AI-generated illustration:
+Input topic: **"Machine Learning"** → output: a plain-language metaphor plus a matching AI-generated illustration, shown together below.
 
-![Magic Metaphors example: a Machine Learning explanation with a dog-fetching-a-ball metaphor and matching illustration](assets/example_screenshot.png)
+![Magic Metaphors example: input topic "Machine Learning" with the generated metaphor (comparing it to training a dog to fetch a ball) and matching illustration shown below it](assets/example_screenshot.png)
 
 ---
 
