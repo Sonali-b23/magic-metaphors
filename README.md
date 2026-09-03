@@ -6,6 +6,14 @@ A clean, robust Streamlit application that transforms complex topics into clear 
 
 ---
 
+## Example
+
+Type in a topic like "Machine Learning" and get back a plain-language metaphor plus a matching AI-generated illustration:
+
+![Magic Metaphors example: a Machine Learning explanation with a dog-fetching-a-ball metaphor and matching illustration](assets/example_screenshot.png)
+
+---
+
 ## Features
 
 * **Topic Input**: Enter any complex concept (e.g., Quantum Entanglement, Black Holes).
@@ -13,6 +21,9 @@ A clean, robust Streamlit application that transforms complex topics into clear 
 * **Visual Generator**: Powered by Stable Diffusion (`stable-diffusion-xl-base-1.0`) to craft a surreal, breathtaking image that matches your generated text. Uses the completely free Hugging Face Serverless Tier.
 * **Sleek Custom UI**: Features a beautiful glassmorphic UI, responsive custom CSS, Google Fonts integration (Inter), and a dark, calming background.
 * **Robust Backend**: Includes a built-in retry-loop strategy directly in the API call logic to automatically survive network blips or timeouts during peak usage.
+* **Download Your Image**: Every generated illustration comes with a one-click download button.
+* **Basic Rate Limiting**: A short cooldown between "Explain" clicks protects your free-tier Hugging Face quota from accidental rapid-fire requests.
+* **No Leaky Errors**: If a request fails, you see a clean, friendly message -- the real exception details are logged server-side only, never shown in the UI.
 
 ---
 
@@ -36,8 +47,11 @@ A clean, robust Streamlit application that transforms complex topics into clear 
    ```
 
 4. **Add your Environment Variables! (VERY IMPORTANT):**
-   Create a file explicitly named `.env` in your main project folder and add your Hugging Face API key. 
-   *(Note: This `.env` file is safely ignored by git across commits).*
+   Copy `.env.example` to `.env` and add your own Hugging Face API key:
+   ```bash
+   cp .env.example .env
+   ```
+   *(Note: `.env` is safely ignored by git across commits -- only `.env.example`, with a placeholder, is committed.)*
    ```env
    HF_API_KEY=your_huggingface_key_here
    ```
@@ -53,11 +67,27 @@ streamlit run app.py
 
 ---
 
+## Running Tests
+
+Tests mock the Hugging Face client entirely, so they run without a real API key and make no network calls.
+
+```bash
+pip install -r requirements-dev.txt
+pytest tests/ -v
+```
+
+Covers: successful generation, empty-topic validation, a failed metaphor never triggering an image call, a failed image still showing the metaphor, the retry/backoff logic, the rate-limit cooldown, and a regression guard ensuring error messages never leak raw exception text to the UI.
+
+---
+
 ## Project Structure
 
 * `app.py` — Main Streamlit app containing all Glassmorphic CSS styling and UI Elements.
 * `model.py` — Backend integration (Hugging Face / text and image model logic / retry behavior).
-* `requirements.txt` — Python dependencies (`streamlit`, `transformers`, `torch`, `python-dotenv`, `huggingface_hub`).
+* `tests/` — Automated tests (`pytest` + Streamlit's `AppTest` harness); see "Running Tests" above.
+* `requirements.txt` — Python dependencies (`streamlit`, `huggingface_hub`, `python-dotenv`, `Pillow`).
+* `requirements-dev.txt` — Adds `pytest` on top of `requirements.txt`, for running the test suite.
+* `.env.example` — Template for the `.env` file you create locally; safe to commit (no real key).
 * `.gitignore` — Filters out environment files and Python caching directories.
 * `README.md` — Project Instructions
 
